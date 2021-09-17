@@ -3,6 +3,7 @@ keras
 matplotlib
 numpy
 pandas
+python=3.7.*
 scikit-learn
 seaborn
-#tensorflow == 2.4.2
+tensorflow>=2.*
