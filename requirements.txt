@@ -3,8 +3,8 @@ keras
 matplotlib
 numpy
 pandas
-python=3.7.*
+python=3
 requests
 scikit-learn
 seaborn
-tensorflow>=2.*
+tensorflow
