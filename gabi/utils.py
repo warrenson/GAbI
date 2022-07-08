@@ -1,28 +1,39 @@
 ################################################################################
-################################# SAMPLE DATA ##################################
+################################# GABI UTILS ###################################
 ################################################################################
 import sys
 import requests
 import aiohttp
 import asyncio
-#import json
-import numpy as np
 import random
-#from collections import Counter
+import numpy as np
 
-# Default Server URL
+# Default ensembl REST server URL
 default_server='https://rest.ensembl.org'
-# get an aiohttp session
+
 def get_session(server=default_server):
+    """return an aiohttp client session"""
     return aiohttp.ClientSession(base_url=server)
 
 # Get an Ensembl region string from a region dict
 get_region_str = lambda r: f"{r['seq_region']}:{r['start']}..{r['end']}:{r['strand']}"
 
-# BLOCKING
 def get_random_region(seq_region, sample_len, seq_region_length):
-    """
-    NOTE: use 1-based indexing for Ensembl region query
+    """Create a random (uniform) sequence region within the range
+    [1, seq_region_length] as a dict.
+
+    NOTE: regions use 1-based indexing,
+    as per the general and Ensembl standard
+
+    :param seq_region: the seq region name, usually the chromosome name
+    :type  seq_region: str
+    :param sample_len: length of region sample to create
+    :type  sample_len: int
+    :param seq_region_length: the total length of the seq region (chromosome)
+    :type  seq_region_length: int
+
+    :return: region feature dictionary
+    :rtype : dict {'seq_region': str, 'start': int, 'end': int, 'strand': int, 'len': int}
     """
     # get random end between min/max end point
     end = random.randint(sample_len, seq_region_length)
@@ -38,15 +49,22 @@ def get_random_region(seq_region, sample_len, seq_region_length):
         'len': end - start + 1
     }
 
-# BLOCKING
 def get_chromosomes(species, server=default_server):
-    """ species info """
+    """get a dict of chromosome names and lengths for a species
+    (blocking get request)
+
+    :param species: ensembl species name
+    :type  species: str
+    :param server: ensembl REST server URL, default https://rest.ensembl.org
+    :type  server: str
+
+    :return: dict of chromosome names, lengths as keys, values
+    :rtype : dict['nae
+    """
     ext = f"/info/assembly/{species}?"
     r = requests.get(server+ext, headers={ "Content-Type" : "application/json"})
     if not r.ok:
         r.raise_for_status()
-        
-              
     res = r.json()
     chromosomes = {}
     for r in res['top_level_region']:
@@ -55,41 +73,71 @@ def get_chromosomes(species, server=default_server):
     # return dict of chromosome names and lengths
     return chromosomes
 
-# ANSYNC
-async def region_seq(
-        species,
-        loc,
-        session=None,
-        server=default_server
-        ):
+async def region_seq(species, loc, session=None, server=default_server):
+    """region_seq
+    (async get request)
+
+    Return the (DNA) sequence (str) for a species location
+
+    :param species: ensembl species name
+    :type  species: str
+    :param loc: ensembl location string
+    :type  loc: str
+    :param session: aiohttp client session, default None
+    :type  session: aiohttp.ClientSession
+    :param server: ensembl REST server URL, default https://rest.ensembl.org
+    :type  server: str
+
+    :return: region DNA sequence
+    :rtype : str (asyncio awaitable)
+    """
     ext = f"/sequence/region/{species}/{loc}"
-    async with session.get(ext, headers={ "Content-Type" : "text/plain"}) as resp:
-        if not resp.ok:
-            print(f"{resp.status}\n{resp.headers}\n", file=sys.stderr)
-            resp.raise_for_status()
+    async with session.get(ext, headers={"Content-Type":"text/plain"}) as r:
+        if not r.ok:
+            print(f"{r.status}\n{r.headers}\n", file=sys.stderr)
+            r.raise_for_status()
 
-        return await resp.text()
+        return await r.text()
 
-# ANSYNC
 async def region_labels(
         species,
         region,
         feature_types='exon',
-        transcript_strategy='cannonical',
         biotype='protein_coding',
         session=None,
         server=default_server
         ):
     """
+    region_labels
+    (async get request)
+
     This should return a numpy ndarray of zeros and ones
     with shape (region_length, len(feature_types)). That is
     a column of exon labels, and a column of CDS labels,
     by default.
-    Transcript splice variants are handled by transcript_strategy.
-    'cannonical' selects only cannonical transcript sub-features.
-    'merge' combines overlapping features of the same type,
-    if in the same gene, e.g. all exons from all transcripts
-    of a particular gene.
+
+    Transcript splice variants are handled by selecting only cannonical
+    transcript sub-features.
+
+    TODO (maybe): Add 'merge' option to instead combine overlapping features of
+    the same type, if in the same gene, e.g. all exons from all transcripts of
+    a particular gene.
+
+    :param species: ensembl species name
+    :type  species: str
+    :param region: region dict, e.g from gabi.utils.get_random_region
+    :type  region: dict
+    :param feature_types: sub-feature tag(s) for labels, default exon
+    :type  feature_types: str or [str]
+    :param biotype: limit the transcripts to biotype, default protein_coding
+    :types biotype: str
+    :param session: aiohttp client session, default None
+    :type  session: aiohttp.ClientSession
+    :param server: ensembl REST server URL, default https://rest.ensembl.org
+    :type  server: str
+
+    :return: array of labels with shape (region length, num feature_types)
+    :rtype : numpy.ndarray
     """
     # listify feature_types
     if isinstance(feature_types, str):
@@ -100,12 +148,12 @@ async def region_labels(
     loc = get_region_str(region)
     ext = f"/overlap/region/{species}/{loc}?feature=transcript;{fstr};biotype={biotype}"
     if not session: session = get_session(server)
-    async with session.get(ext, headers={ "Content-Type" : "application/json"}) as resp:
-        if not resp.ok:
-            print(f"{resp.status}\n{resp.headers}\n", file=sys.stderr)
-            resp.raise_for_status()
+    async with session.get(ext, headers={ "Content-Type" : "application/json"}) as r:
+        if not r.ok:
+            print(f"{r.status}\n{r.headers}\n", file=sys.stderr)
+            r.raise_for_status()
         # init labels of zeros
-        decoded = await resp.json()
+        decoded = await r.json()
     labels = np.zeros((region['len'], len(feature_types)), dtype=np.int8)
     if not decoded:
         return labels # no features, return labels array of zeros
@@ -138,17 +186,69 @@ async def region_labels(
     # Transfer features to labels
     for fid, f in label_features.items():
         # Get ZERO-BASED indices for feature, relative to region
-        start = max(0, f['start'] - region['start']) # truncate at start of region
-        end   = min(region['len'] - 1, f['end'] - region['start']) # truncate at end of region
+        # truncate at start of region
+        start = max(0, f['start'] - region['start'])
+        # truncate at end of region
+        end   = min(region['len'] - 1, f['end'] - region['start'])
         # get the column index to transfer to
         col = feature_cols[ f['feature_type'] ]
-        # assign label 1 to feature's position range on it's label list (array column)
+        # assign label 1 to feature's on it's label list (array column)
         labels[start:end, col] = 1
     return labels
 
-async def sample_generator(species='homo_sapiens', n=10, sample_len=1000, server=default_server, seed=None):
-    """ Generator """
-    if seed: random.seed(seed)
+async def sample_generator(
+        species='homo_sapiens',
+        n=10,
+        sample_len=1000,
+        server=default_server,
+        seed=None
+        ):
+    """
+    Generate sample regions for a species
+    (async generator)
+
+    USAGE
+    -----
+
+    import gabi.utils
+    # create the default generator
+    g = gabi.utils.sample_generator()
+
+    # Get one sample
+    r = await g.__anext__()
+    print(r['seq_region']) # region name
+    print(r['start'])
+    print(r['end'])
+    print(r['strand'])
+    print(r['loc'])
+    print(r['len'])
+    print(sorted(set(r['seq']))) # check all nucleotide types in seq
+    print(r['labels'].shape) # check shape of labels array
+
+    # get samples until generator is empty
+    while True:
+        try:
+            r = await g.__anext__()
+        except StopAsyncIteration:
+            break
+        print(r['loc'])
+
+    :param n: max samples, default 10. n=None yields infinite samples
+    :type  n: int || None
+    :param sample_len: length of sample regions, default 1000
+    :type  sample_len: int
+    :param server: ensembl REST service URL, default https://rest.ensembl.org
+    :type  server: str
+    :param seed: set the random seed for sampling, default None (don't)
+    :type  seed: int
+
+    :return: generator of region dicts, with sequence and labels
+    :rtype : async_generator
+    """
+    # set random seed?
+    if seed:
+        random.seed(seed)
+        np.random.seed(seed)
 
     async with aiohttp.ClientSession(base_url=server) as session:
         # Get the chromosomes and their lengths
@@ -167,10 +267,14 @@ async def sample_generator(species='homo_sapiens', n=10, sample_len=1000, server
             region_loc = get_region_str(region)
             region['loc'] = region_loc
             
-            # Get region sequence
-            region['seq'] = await region_seq(species, region_loc, session=session)
-            # get region labels
-            region['labels'] = await region_labels(species, region, session=session)
+            # get sample region componenets asynchronously,
+            # note result is ordered by input order
+            region['seq'], region['labels'] = await asyncio.gather(
+                # Get region sequence
+                region_seq(species, region_loc, session=session),
+                # get region labels
+                region_labels(species, region, session=session),
+            )
 
             # Increment generator count
             count += 1
