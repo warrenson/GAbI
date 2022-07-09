@@ -25,10 +25,10 @@ def get_random_region(seq_region, sample_len, seq_region_length):
     NOTE: regions use 1-based indexing,
     as per the general and Ensembl standard
 
-    :param seq_region: the seq region name, usually the chromosome name
-    :type  seq_region: str
-    :param sample_len: length of region sample to create
-    :type  sample_len: int
+    :param        seq_region: the seq region name, usually the chromosome name
+    :type         seq_region: str
+    :param        sample_len: length of region sample to create
+    :type         sample_len: int
     :param seq_region_length: the total length of the seq region (chromosome)
     :type  seq_region_length: int
 
@@ -55,8 +55,8 @@ def get_chromosomes(species, server=default_server):
 
     :param species: ensembl species name
     :type  species: str
-    :param server: ensembl REST server URL, default https://rest.ensembl.org
-    :type  server: str
+    :param  server: ensembl REST server URL, default https://rest.ensembl.org
+    :type   server: str
 
     :return: dict of chromosome names, lengths as keys, values
     :rtype : dict['nae
@@ -81,12 +81,12 @@ async def region_seq(species, loc, session=None, server=default_server):
 
     :param species: ensembl species name
     :type  species: str
-    :param loc: ensembl location string
-    :type  loc: str
+    :param     loc: ensembl location string
+    :type      loc: str
     :param session: aiohttp client session, default None
     :type  session: aiohttp.ClientSession
-    :param server: ensembl REST server URL, default https://rest.ensembl.org
-    :type  server: str
+    :param  server: ensembl REST server URL, default https://rest.ensembl.org
+    :type   server: str
 
     :return: region DNA sequence
     :rtype : str (asyncio awaitable)
@@ -123,18 +123,18 @@ async def region_labels(
     the same type, if in the same gene, e.g. all exons from all transcripts of
     a particular gene.
 
-    :param species: ensembl species name
-    :type  species: str
-    :param region: region dict, e.g from gabi.utils.get_random_region
-    :type  region: dict
+    :param       species: ensembl species name
+    :type        species: str
+    :param        region: region dict, e.g from gabi.utils.get_random_region
+    :type         region: dict
     :param feature_types: sub-feature tag(s) for labels, default exon
     :type  feature_types: str or [str]
-    :param biotype: limit the transcripts to biotype, default protein_coding
-    :types biotype: str
-    :param session: aiohttp client session, default None
-    :type  session: aiohttp.ClientSession
-    :param server: ensembl REST server URL, default https://rest.ensembl.org
-    :type  server: str
+    :param       biotype: limit the transcripts to biotype, default protein_coding
+    :types       biotype: str
+    :param       session: aiohttp client session, default None
+    :type        session: aiohttp.ClientSession
+    :param        server: ensembl REST server URL, default https://rest.ensembl.org
+    :type         server: str
 
     :return: array of labels with shape (region length, num feature_types)
     :rtype : numpy.ndarray
@@ -212,10 +212,10 @@ async def sample_generator(
 
     import gabi.utils
     # create the default generator
-    g = gabi.utils.sample_generator()
+    sgen = gabi.utils.sample_generator()
 
     # Get one sample
-    r = await g.__anext__()
+    r = await sgen.__anext__()
     print(r['seq_region']) # region name
     print(r['start'])
     print(r['end'])
@@ -226,21 +226,17 @@ async def sample_generator(
     print(r['labels'].shape) # check shape of labels array
 
     # get samples until generator is empty
-    while True:
-        try:
-            r = await g.__anext__()
-        except StopAsyncIteration:
-            break
+    for r in sgen:
         print(r['loc'])
 
-    :param n: max samples, default 10. n=None yields infinite samples
-    :type  n: int || None
+    :param          n: max samples, default 10. n=None yields infinite samples
+    :type           n: int || None
     :param sample_len: length of sample regions, default 1000
     :type  sample_len: int
-    :param server: ensembl REST service URL, default https://rest.ensembl.org
-    :type  server: str
-    :param seed: set the random seed for sampling, default None (don't)
-    :type  seed: int
+    :param     server: ensembl REST service URL, default https://rest.ensembl.org
+    :type      server: str
+    :param       seed: set the random seed for sampling, default None (don't)
+    :type        seed: int
 
     :return: generator of region dicts, with sequence and labels
     :rtype : async_generator
