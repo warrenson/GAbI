@@ -142,6 +142,8 @@ async def region_labels(
     # listify feature_types
     if isinstance(feature_types, str):
         feature_types = [feature_types]
+    # lowercase the feature types
+    feature_types = [x.lower() for x in feature_types]
     # make feature query string
     fstr = ';'.join([f"feature={f}" for f in feature_types])
     # get transcripts and target features in region
@@ -167,7 +169,7 @@ async def region_labels(
     label_features = {}
     for fid, f in features.items():
         # Check for target types
-        if f['feature_type'] not in feature_types:
+        if f['feature_type'].lower() not in feature_types:
             continue
         # Check parent if canonical mode
         if features[ f['Parent'] ]['is_canonical'] == 0:
@@ -198,6 +200,8 @@ async def region_labels(
 
 async def sample_generator(
         species='homo_sapiens',
+        feature_types='exon',
+        biotype='protein_coding',
         n=10,
         sample_len=1000,
         server=default_server,
@@ -226,17 +230,23 @@ async def sample_generator(
     print(r['labels'].shape) # check shape of labels array
 
     # get samples until generator is empty
-    for r in sgen:
+    async for r in sgen:
         print(r['loc'])
 
-    :param          n: max samples, default 10. n=None yields infinite samples
-    :type           n: int || None
-    :param sample_len: length of sample regions, default 1000
-    :type  sample_len: int
-    :param     server: ensembl REST service URL, default https://rest.ensembl.org
-    :type      server: str
-    :param       seed: set the random seed for sampling, default None (don't)
-    :type        seed: int
+    :param       species: ensembl species name
+    :type        species: str
+    :param feature_types: sub-feature tag(s) for labels, default exon
+    :type  feature_types: str or [str]
+    :param       biotype: limit the transcripts to biotype, default protein_coding
+    :types       biotype: str
+    :param             n: max samples, default 10. n=None yields infinite samples
+    :type              n: int || None
+    :param    sample_len: length of sample regions, default 1000
+    :type     sample_len: int
+    :param        server: ensembl REST service URL, default https://rest.ensembl.org
+    :type         server: str
+    :param          seed: set the random seed for sampling, default None (don't)
+    :type           seed: int
 
     :return: generator of region dicts, with sequence and labels
     :rtype : async_generator
@@ -269,7 +279,7 @@ async def sample_generator(
                 # Get region sequence
                 region_seq(species, region_loc, session=session),
                 # get region labels
-                region_labels(species, region, session=session),
+                region_labels(species, region, feature_types=feature_types, biotype=biotype, session=session),
             )
 
             # Increment generator count
