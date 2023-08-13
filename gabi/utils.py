@@ -202,7 +202,7 @@ async def sample_generator(
         species='homo_sapiens',
         feature_types='exon',
         biotype='protein_coding',
-        n=10,
+        n=None,
         sample_len=1000,
         server=default_server,
         seed=None
@@ -239,7 +239,7 @@ async def sample_generator(
     :type  feature_types: str or [str]
     :param       biotype: limit the transcripts to biotype, default protein_coding
     :types       biotype: str
-    :param             n: max samples, default 10. n=None yields infinite samples
+    :param             n: max samples, default None yields infinite samples
     :type              n: int || None
     :param    sample_len: length of sample regions, default 1000
     :type     sample_len: int
@@ -286,3 +286,21 @@ async def sample_generator(
             count += 1
             # yield the region dict
             yield region
+
+def encode(seq: str, enc: dict) -> dict:
+    """Encode (into numpy array uint8) a sequence str with and enc(oding) dict"""
+    encoded = None
+    try:
+        encoded = np.array(
+        [c for s in seq.upper() for c in enc[s]], # flat list
+        dtype="uint8",
+        )
+    except KeyError as e:
+        print(f"Cannot encode nucleotide {e} with this encoder! {enc}", file=sys.stderr)
+        return None
+    return {
+        'seq': encoded,
+        'bits': enc['bits'],
+        'id': enc['id'],
+        }
+
