@@ -142,10 +142,8 @@ async def region_labels(
     # listify feature_types
     if isinstance(feature_types, str):
         feature_types = [feature_types]
-    # lowercase the feature types
-    feature_types = [x.lower() for x in feature_types]
     # make feature query string
-    fstr = ';'.join([f"feature={f}" for f in feature_types])
+    fstr = ';'.join([f"feature={f.lower()}" for f in feature_types])
     # get transcripts and target features in region
     loc = get_region_str(region)
     ext = f"/overlap/region/{species}/{loc}?feature=transcript;{fstr};biotype={biotype}"
@@ -154,9 +152,11 @@ async def region_labels(
         if not r.ok:
             print(f"{r.status}\n{r.headers}\n", file=sys.stderr)
             r.raise_for_status()
-        # init labels of zeros
         decoded = await r.json()
-    labels = np.zeros((region['len'], len(feature_types)), dtype=np.int8)
+
+    # init label arrays of zeros for each feature_types
+    labels = { k : np.zeros((region['len']), dtype=np.int8) for k in feature_types }
+
     if not decoded:
         return labels # no features, return labels array of zeros
 
@@ -168,11 +168,11 @@ async def region_labels(
     # filter
     label_features = {}
     for fid, f in features.items():
-        # Check for target types
-        if f['feature_type'].lower() not in feature_types:
+        # Do we want this feature type?
+        if f['feature_type'].lower() not in map(str.lower, feature_types):
             continue
-        # Check parent if canonical mode
-        if features[ f['Parent'] ]['is_canonical'] == 0:
+        # Skip only if feature is specifically non-cannonical
+        if features[ f['Parent'] ].get('is_canonical', 1) == 0:
             continue
         # Check extents
         if f['end'] < region['start'] or f['start'] > region['end']:
@@ -182,9 +182,6 @@ async def region_labels(
     if not label_features:
         return labels
 
-    # We'll need to "randomly" access the labels array,
-    # columns (feature types), consistently by index
-    feature_cols = {k:v for v, k in enumerate(feature_types)}
     # Transfer features to labels
     for fid, f in label_features.items():
         # Get ZERO-BASED indices for feature, relative to region
@@ -192,10 +189,8 @@ async def region_labels(
         start = max(0, f['start'] - region['start'])
         # truncate at end of region
         end   = min(region['len'] - 1, f['end'] - region['start'])
-        # get the column index to transfer to
-        col = feature_cols[ f['feature_type'] ]
-        # assign label 1 to feature's on it's label list (array column)
-        labels[start:end, col] = 1
+        # assign 1 to feature's range in feature_type label array
+        labels[f['feature_type']][start:end] = 1
     return labels
 
 async def sample_generator(
