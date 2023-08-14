@@ -283,6 +283,20 @@ async def sample_generator(
             # yield the region dict
             yield region
 
+def sample_summary(s):
+    e = s.get('encoded')
+    encodings = ''
+    if e:
+        encodings = "\n"+"\n".join([ f"  {e[k]['id']}: {e[k]['bits']}bit" for k in e.keys() ])
+    return "\n".join([
+        f"species: {s['species']}",
+        f"location: {s['loc']}",
+        f"length: {s['len']}",
+        f"labels: " +
+            ', '.join([ f"{l}={sum(s['labels'][l])}" for l in s['labels'] ]),
+        f"encodings:{encodings}",
+    ])
+
 def encode(seq: str, enc: dict) -> dict:
     """Encode (into numpy array uint8) a sequence str with and enc(oding) dict"""
     encoded = None
