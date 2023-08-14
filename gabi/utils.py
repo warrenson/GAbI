@@ -268,6 +268,7 @@ async def sample_generator(
             #print(seq_id, sample_len, chr_dict)
             # Get random region on chosen chromosome
             region = get_random_region(seq_id, sample_len, chr_dict[seq_id])
+            region['species'] = species # attach species name
 
             # Get and store a region location string
             region_loc = get_region_str(region)
