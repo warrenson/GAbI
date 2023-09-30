@@ -8,17 +8,17 @@ import asyncio
 import random
 import numpy as np
 
-# Default ensembl REST server URL
-default_server='https://rest.ensembl.org'
+ENSEMBL_REST = 'https://rest.ensembl.org'
+ENSEMBL_FTP  = 'http://ftp.ensemblgenomes.org'
 
-def get_session(server=default_server):
+def get_session(server:str=ENSEMBL_REST):
     """return an aiohttp client session"""
     return aiohttp.ClientSession(base_url=server)
 
 # Get an Ensembl region string from a region dict
 get_region_str = lambda r: f"{r['seq_region']}:{r['start']}..{r['end']}:{r['strand']}"
 
-def get_random_region(seq_region, sample_len, seq_region_length):
+def get_random_region(seq_region:str, sample_len:int, seq_region_length:int):
     """Create a random (uniform) sequence region within the range
     [1, seq_region_length] as a dict.
 
@@ -49,7 +49,7 @@ def get_random_region(seq_region, sample_len, seq_region_length):
         'len': end - start + 1
     }
 
-def get_chromosomes(species, server=default_server):
+def get_chromosomes(species:str, server:str=ENSEMBL_REST):
     """get a dict of chromosome names and lengths for a species
     (blocking get request)
 
@@ -73,7 +73,7 @@ def get_chromosomes(species, server=default_server):
     # return dict of chromosome names and lengths
     return chromosomes
 
-async def region_seq(species, loc, session=None, server=default_server):
+async def region_seq(species:str, loc:str, session:aiohttp.ClientSession=None, server:str=ENSEMBL_REST):
     """region_seq
     (async get request)
 
@@ -100,12 +100,12 @@ async def region_seq(species, loc, session=None, server=default_server):
         return await r.text()
 
 async def region_labels(
-        species,
-        region,
-        feature_types='exon',
-        biotype='protein_coding',
-        session=None,
-        server=default_server
+        species:str,
+        region:str,
+        feature_types:str='exon',
+        biotype:str='protein_coding',
+        session:aiohttp.ClientSession=None,
+        server:str=ENSEMBL_REST
         ):
     """
     region_labels
@@ -194,13 +194,13 @@ async def region_labels(
     return labels
 
 async def sample_generator(
-        species='homo_sapiens',
-        feature_types='exon',
-        biotype='protein_coding',
-        n=None,
-        sample_len=1000,
-        server=default_server,
-        seed=None
+        species:str='homo_sapiens',
+        feature_types:str='exon',
+        biotype=:str'protein_coding',
+        n:int=None,
+        sample_len:int=1000,
+        server:str=ENSEMBL_REST,
+        seed:int=None
         ):
     """
     Generate sample regions for a species
@@ -283,7 +283,7 @@ async def sample_generator(
             # yield the region dict
             yield region
 
-def sample_summary(s):
+def sample_summary(s:dict):
     e = s.get('encoded')
     encodings = ''
     if e:
@@ -297,7 +297,7 @@ def sample_summary(s):
         f"encodings:{encodings}",
     ])
 
-def encode(seq: str, enc: dict) -> dict:
+def encode(seq:str, enc:dict) -> dict:
     """Encode (into numpy array uint8) a sequence str with and enc(oding) dict"""
     encoded = None
     try:
@@ -314,3 +314,14 @@ def encode(seq: str, enc: dict) -> dict:
         'id': enc['id'],
         }
 
+def window_idx(length:int, w:int, step:int=1) -> np.ndarray:
+    """Generate window indicies"""
+    start = 0
+    end = w
+    # step window while within length
+    while end <= length:
+        # yield current window position
+        yield (start, end)
+        # update window position
+        start = start + step
+        end = end + step
