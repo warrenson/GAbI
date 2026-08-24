@@ -129,3 +129,7 @@ dmypy.json
 .pyre/
 # GABI
 experiments/data
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+.aider*

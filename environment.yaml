@@ -15,6 +15,7 @@ dependencies:
   - backcall=0.2.0=pyh9f0ad1d_0
   - backports=1.0=pyhd8ed1ab_3
   - backports.functools_lru_cache=1.6.5=pyhd8ed1ab_0
+  - biopython=1.81=py39h02fc5c5_0
   - blas=2.118=openblas
   - blas-devel=3.9.0=18_osxarm64_openblas
   - blinker=1.6.2=pyhd8ed1ab_0
@@ -62,13 +63,13 @@ dependencies:
   - ipython_genutils=0.2.0=pyhd3eb1b0_1
   - jedi=0.19.0=pyhd8ed1ab_0
   - joblib=1.3.2=pyhd8ed1ab_0
-  - jpeg=9d=h1a28f6b_0
+  - jpeg=9e=he4db4b2_2
   - jupyter_client=8.3.1=pyhd8ed1ab_0
   - jupyter_core=5.3.2=py39h2804cbe_0
   - keras-preprocessing=1.1.2=pyhd3eb1b0_0
   - kiwisolver=1.4.5=py39hbd775c9_1
   - krb5=1.20.1=h127bd45_0
-  - lcms2=2.15=h40e5a24_2
+  - lcms2=2.15=h481adae_0
   - lerc=4.0.0=h9a09cb3_0
   - libabseil=20220623.0=cxx17_h28b99d4_6
   - libblas=3.9.0=18_osxarm64_openblas
@@ -78,7 +79,7 @@ dependencies:
   - libcblas=3.9.0=18_osxarm64_openblas
   - libcurl=7.87.0=hbe9bab4_0
   - libcxx=16.0.6=h4653b0c_0
-  - libdeflate=1.19=hb547adb_0
+  - libdeflate=1.17=h1a8c8d9_0
   - libedit=3.1.20191231=hc8eb9b7_2
   - libev=4.33=h642e427_1
   - libffi=3.4.2=h3422bc3_5
@@ -86,7 +87,7 @@ dependencies:
   - libgfortran5=13.2.0=hf226fd6_1
   - libgrpc=1.51.1=h503f348_0
   - libiconv=1.16=h1a28f6b_1
-  - libjpeg-turbo=2.1.5.1=hb547adb_1
+  - libjpeg-turbo=2.1.4=h1a8c8d9_0
   - liblapack=3.9.0=18_osxarm64_openblas
   - liblapacke=3.9.0=18_osxarm64_openblas
   - libllvm11=11.1.0=hfa12f05_5
@@ -97,10 +98,10 @@ dependencies:
   - libsodium=1.0.18=h27ca646_1
   - libsqlite=3.43.0=hb31c410_0
   - libssh2=1.10.0=hb80f160_3
-  - libtiff=4.6.0=h77c4dce_1
-  - libwebp=1.2.0=h68602c7_0
-  - libwebp-base=1.3.2=hb547adb_0
-  - libxcb=1.15=hf346824_0
+  - libtiff=4.5.0=h5dffbdd_2
+  - libwebp=1.2.4=h999c80f_1
+  - libwebp-base=1.2.4=h1a8c8d9_0
+  - libxcb=1.13=h9b22ae9_1004
   - libzlib=1.2.13=h53f4e23_5
   - llvm-openmp=16.0.6=h1c12783_0
   - lz4-c=1.9.3=hc377ac9_0
@@ -117,7 +118,7 @@ dependencies:
   - oauthlib=3.2.2=pyhd8ed1ab_0
   - olefile=0.46=pyhd3eb1b0_0
   - openblas=0.3.24=openmp_hce3e5ba_0
-  - openjpeg=2.5.0=h4c1507b_3
+  - openjpeg=2.5.0=hbc2ba62_2
   - openssl=1.1.1w=h53f4e23_0
   - opt_einsum=3.3.0=pyhd3eb1b0_1
   - packaging=23.1=pyhd8ed1ab_0
@@ -125,7 +126,7 @@ dependencies:
   - parso=0.8.3=pyhd8ed1ab_0
   - pexpect=4.8.0=pyh1a96a4e_2
   - pickleshare=0.7.5=py_1003
-  - pillow=10.0.1=py39hef383c8_1
+  - pillow=9.4.0=py39h8bd98a6_1
   - pip=23.2.1=pyhd8ed1ab_0
   - platformdirs=2.6.0=pyhd8ed1ab_0
   - prompt-toolkit=3.0.39=pyha770c72_0
@@ -187,6 +188,9 @@ dependencies:
   - zlib=1.2.13=h53f4e23_5
   - zstd=1.5.5=h4f39d0f_0
   - pip:
+    - bientropy==1.1.4
+    - bitarray==2.8.1
+    - bitstring==4.1.2
     - flatbuffers==2.0
     - keras==2.8.0
     - libclang==13.0.0

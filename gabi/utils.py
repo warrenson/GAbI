@@ -196,7 +196,7 @@ async def region_labels(
 async def sample_generator(
         species:str='homo_sapiens',
         feature_types:str='exon',
-        biotype=:str'protein_coding',
+        biotype:str='protein_coding',
         n:int=None,
         sample_len:int=1000,
         server:str=ENSEMBL_REST,
