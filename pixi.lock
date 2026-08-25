@@ -907,7 +907,7 @@ packages:
   - aiohttp>=3.14.3,<4
   - asyncio>=4.0.0,<5
   - biopython>=1.88,<2
-  - multiprocess
+  - multiprocess>=0.70.19,<0.71
   requires_python: '>=3.11'
 - pypi: https://files.pythonhosted.org/packages/06/ec/5189518c7a7659c4bdcc6b1eb32c46c6f3c86b0661ffd84143d1112c7732/pandas-3.0.5-cp314-cp314-macosx_11_0_arm64.whl
   name: pandas
