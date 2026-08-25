@@ -30,3 +30,13 @@ curl -sSL https://github.com/sandialabs/bientropy/archive/refs/tags/v1.1.4.tar.g
 cd bientropy-1.1.4
 pixi run --manifest-path $(readlink -f ..) python setup.py install
 ```
+
+## Notebooks
+Requires Jupyter for now, install the GAbI ipykernel into your jupyter (user config probably),
+
+TODO: Add jupyter to new pixi `run` environment.
+
+See the help command for details, you probably want to use `--user`
+```
+pixi run python -m ipykernel install --help
+```
